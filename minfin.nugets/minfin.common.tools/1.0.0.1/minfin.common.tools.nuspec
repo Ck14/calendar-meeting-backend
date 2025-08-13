@@ -1,0 +1,16 @@
+<?xml version="1.0"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd">
+  <metadata>
+    <id>Minfin.Common.Tools</id>
+    <version>1.0.0.1</version>
+    <title>Minfin Common Tools</title>
+    <authors>Ministerio de Finanzas Públicas</authors>
+    <owners>Ministerio de Finanzas Públicas</owners>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>Librerias de funciones y clases útiles para diversos proyectos.</description>
+    <releaseNotes>Utilerias y rutinas que son comunmente utilizadas en varios proyectos.</releaseNotes>
+    <copyright>Copyright Minfin 2014</copyright>
+    <tags>Common Tools</tags>
+    <dependencies />
+  </metadata>
+</package>

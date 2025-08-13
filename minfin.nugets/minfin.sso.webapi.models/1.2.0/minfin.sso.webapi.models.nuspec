@@ -1,0 +1,16 @@
+<?xml version="1.0"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd">
+  <metadata>
+    <id>Minfin.SSO.WebApi.Models</id>
+    <version>1.2.0.0</version>
+    <title>Minfin.SSO.WebApi.Models</title>
+    <authors>Minfin</authors>
+    <owners>Minfin</owners>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>Modelo de datos usado por el API del SSO.</description>
+    <releaseNotes>Cambio en modelo de respuesta de registro de usuario</releaseNotes>
+    <copyright>Copyright © Minfin 2013</copyright>
+    <tags>web service api models sso</tags>
+    <dependencies />
+  </metadata>
+</package>

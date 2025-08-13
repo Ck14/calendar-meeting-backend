@@ -1,0 +1,20 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<configuration>
+  <appSettings>
+    <add key="Minfin.Jasper.Server.Url" value="http://srv-jasper:8082" />
+    <add key="Minfin.Jasper.Server.Username" value="sistema-jasperusr" />
+    <add key="Minfin.Jasper.Server.Password" value="sistema-jasperpwd" />
+    <add key="Minfin.Jasper.Reports.Path" value="/jasperserver/rest_v2/reports/reports/SISTEMA" />
+  </appSettings>
+  <system.web>
+    <httpHandlers>
+      <add path="Reportes.axd" verb="GET" type="Minfin.JasperClient.WebForms.ReportesHttpHandler, Minfin.JasperClient.WebForms" />
+    </httpHandlers>
+  </system.web>
+  <system.webServer>
+    <validation validateIntegratedModeConfiguration="false"/>
+    <handlers>
+      <add name="Reportes" path="Reportes.axd" verb="GET" type="Minfin.JasperClient.WebForms.ReportesHttpHandler, Minfin.JasperClient.WebForms" preCondition="integratedMode" />
+    </handlers>
+  </system.webServer>
+</configuration>

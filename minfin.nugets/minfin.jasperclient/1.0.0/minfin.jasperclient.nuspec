@@ -1,0 +1,16 @@
+<?xml version="1.0"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd">
+  <metadata>
+    <id>Minfin.JasperClient</id>
+    <version>1.0.0.0</version>
+    <title>Minfin.JasperClient</title>
+    <authors>Ministerio de Finanzas Públicas</authors>
+    <owners>Ministerio de Finanzas Públicas</owners>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>Cliente para integrar reportes de Jasper en aplicaciones .Net</description>
+    <releaseNotes />
+    <copyright>Copyright 2015</copyright>
+    <tags>Reports Jasper</tags>
+    <dependencies />
+  </metadata>
+</package>

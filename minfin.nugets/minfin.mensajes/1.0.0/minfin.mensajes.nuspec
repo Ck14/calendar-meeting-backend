@@ -1,0 +1,18 @@
+<?xml version="1.0"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd">
+  <metadata>
+    <id>Minfin.Mensajes</id>
+    <version>1.0.0</version>
+    <title>Minfin.Mensajes</title>
+    <authors>Ministerio de Finanzas Públicas</authors>
+    <owners>Ministerio de Finanzas Públicas</owners>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>Libreria de mensajes comunes del ministerio</description>
+    <releaseNotes>Libreria de tipos de mensajes comunes dentro del Minfin.</releaseNotes>
+    <copyright>Copyright Minfin 2015</copyright>
+    <tags>ServiceBus, Mensajes</tags>
+    <dependencies>
+      <dependency id="MassTransit" version="3.0.13" />
+    </dependencies>
+  </metadata>
+</package>

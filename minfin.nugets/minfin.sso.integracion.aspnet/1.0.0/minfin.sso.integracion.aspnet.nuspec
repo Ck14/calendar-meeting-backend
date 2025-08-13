@@ -1,0 +1,19 @@
+<?xml version="1.0"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd">
+  <metadata>
+    <id>Minfin.SSO.Integracion.AspNet</id>
+    <version>1.0.0.0</version>
+    <title>Minfin.SSO.Integracion.AspNet</title>
+    <authors>Minfin</authors>
+    <owners>Minfin</owners>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>Libreria de integracion del SSO del minfin con aplicaciones asp.net</description>
+    <releaseNotes>Integracion de la autenticacion del SSO para una aplicacion ASP.NET.</releaseNotes>
+    <copyright>Copyright Minfin 2014</copyright>
+    <tags>SSO</tags>
+    <dependencies>
+      <dependency id="Minfin.Common.Config" version="1.0.0.1" />
+      <dependency id="Minfin.SSO.WebApi.Client" version="1.2.0.0" />
+    </dependencies>
+  </metadata>
+</package>

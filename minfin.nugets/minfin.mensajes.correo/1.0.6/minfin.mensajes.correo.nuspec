@@ -1,0 +1,16 @@
+<?xml version="1.0"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd">
+  <metadata>
+    <id>Minfin.Mensajes.Correo</id>
+    <version>1.0.6</version>
+    <title>Minfin.Mensajes.Correo</title>
+    <authors>Ministerio de Finanzas Públicas</authors>
+    <owners>Ministerio de Finanzas Públicas</owners>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>Libreria con mensajes para el envío de correo electrónico</description>
+    <releaseNotes>Libreria de mensajes para funcionalidades de envio de correo electrónico.</releaseNotes>
+    <copyright>Copyright Minfin 2015</copyright>
+    <tags>ServiceBus, Mensajes, Correo</tags>
+    <dependencies />
+  </metadata>
+</package>

@@ -1,0 +1,16 @@
+<?xml version="1.0"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd">
+  <metadata>
+    <id>Minfin.Common.Validators</id>
+    <version>1.0.0.3</version>
+    <title>Minfin Common Validators</title>
+    <authors>Ministerio de Finanzas Públicas</authors>
+    <owners>Ministerio de Finanzas Públicas</owners>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>Rutinas y algoritmos de validación comunes entre sistemas.</description>
+    <releaseNotes>Se actualizaron los códigos de municipio</releaseNotes>
+    <copyright>Copyright 2014</copyright>
+    <tags>Common Validators</tags>
+    <dependencies />
+  </metadata>
+</package>

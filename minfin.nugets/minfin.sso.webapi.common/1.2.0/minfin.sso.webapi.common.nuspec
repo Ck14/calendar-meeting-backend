@@ -1,0 +1,16 @@
+<?xml version="1.0"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd">
+  <metadata>
+    <id>Minfin.SSO.WebApi.Common</id>
+    <version>1.2.0.0</version>
+    <title>Minfin.SSO.WebApi.Common</title>
+    <authors>Minfin</authors>
+    <owners>Minfin</owners>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>Código comun entre el servidor y el cliente del API del SSO.</description>
+    <releaseNotes />
+    <copyright>Copyright © Minfin 2013</copyright>
+    <tags>web service api common sso</tags>
+    <dependencies />
+  </metadata>
+</package>

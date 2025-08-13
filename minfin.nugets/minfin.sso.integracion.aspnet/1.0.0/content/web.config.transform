@@ -1,0 +1,44 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<configuration>
+  <appSettings>
+    <add key="Minfin.SingleSignOn.LoginUrl" value="https://ssodesa.minfin.gob.gt/Portal/Default/Credenciales/Login" />
+    <add key="Minfin.SingleSignOn.AutenticarSolicitudUrl" value="https://ssodesa.minfin.gob.gt/Portal/Default/AutenticacionCentral/AutenticarSolicitud?authReqId={0}" />
+    <add key="Minfin.SingleSignOn.ServiceEndpoint" value="https://ssoapidesa.minfin.gob.gt/" />
+    <add key="Minfin.SingleSignOn.PrivateKeyPath" value="~/App_Data/LlavePrivada-Desa.key" />
+  </appSettings>
+  <system.web>
+    <authentication mode="Forms">
+      <forms loginUrl="~/SsoLogin.axd" name="AUTH_COOKIE" timeout="1440" defaultUrl="~/" />
+    </authentication>
+    <authorization>
+      <deny users="?"/>
+    </authorization>
+    <httpHandlers>
+      <add path="Sso.axd" verb="GET" type="Minfin.SSO.Integracion.AspNet.SsoHttpHandler, Minfin.SSO.Integracion.AspNet" />
+      <add path="SsoLogin.axd" verb="GET" type="Minfin.SSO.Integracion.AspNet.SsoLoginHttpHandler, Minfin.SSO.Integracion.AspNet" />
+      <add path="SsoError.axd" verb="GET" type="Minfin.SSO.Integracion.AspNet.SsoErrorHttpHandler, Minfin.SSO.Integracion.AspNet" />
+    </httpHandlers>
+  </system.web>
+  <system.webServer>
+    <validation validateIntegratedModeConfiguration="false"/>
+    <handlers>
+      <add name="Sso" path="Sso.axd" verb="GET" type="Minfin.SSO.Integracion.AspNet.SsoHttpHandler, Minfin.SSO.Integracion.AspNet" preCondition="integratedMode" />
+      <add name="SsoLogin" path="SsoLogin.axd" verb="GET" type="Minfin.SSO.Integracion.AspNet.SsoLoginHttpHandler, Minfin.SSO.Integracion.AspNet" preCondition="integratedMode" />
+      <add name="SsoError" path="SsoError.axd" verb="GET" type="Minfin.SSO.Integracion.AspNet.SsoErrorHttpHandler, Minfin.SSO.Integracion.AspNet" preCondition="integratedMode" />
+    </handlers>
+  </system.webServer>
+  <location path="SsoError.axd">
+    <system.web>
+      <authorization>
+        <allow users="*"/>
+      </authorization>
+    </system.web>
+  </location>
+  <location path="Sso.axd">
+    <system.web>
+      <authorization>
+        <allow users="*" />
+      </authorization>
+    </system.web>
+  </location>
+</configuration>

@@ -1,0 +1,16 @@
+<?xml version="1.0"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd">
+  <metadata>
+    <id>Minfin.JasperClient.WebForms</id>
+    <version>1.0.0.0</version>
+    <title>Minfin JasperClient For WebForms</title>
+    <authors>Ministerio de Finanzas Públicas</authors>
+    <owners>Ministerio de Finanzas Públicas</owners>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>Librería que permite integrar aplicaciones WebForms con reportes en un Jasper Server</description>
+    <copyright>Copyright © Minfin 2015</copyright>
+    <dependencies>
+      <dependency id="Minfin.JasperClient" version="1.0.0.0" />
+    </dependencies>
+  </metadata>
+</package>

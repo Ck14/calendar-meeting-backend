@@ -1,0 +1,19 @@
+<?xml version="1.0"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd">
+  <metadata>
+    <id>Minfin.SSO.WebApi.Client</id>
+    <version>1.2.0.0</version>
+    <title>Minfin.SSO.WebApi.Client</title>
+    <authors>Minfin</authors>
+    <owners>Minfin</owners>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>Cliente de los servicios web de integración al SSO.</description>
+    <releaseNotes>Cambio en modelo de respuesta de registro de usuario</releaseNotes>
+    <copyright>Copyright © Minfin 2012</copyright>
+    <tags>web service api client sso</tags>
+    <dependencies>
+      <dependency id="Minfin.SSO.WebApi.Common" version="1.2.0.0" />
+      <dependency id="Minfin.SSO.WebApi.Models" version="1.2.0.0" />
+    </dependencies>
+  </metadata>
+</package>
