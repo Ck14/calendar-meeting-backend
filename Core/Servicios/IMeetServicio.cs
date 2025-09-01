@@ -6,13 +6,15 @@ namespace Core.Servicios
 {
     public interface IMeetServicio
     {
-        Task<ResultadoHttpModelo> ObtenerTodasAsync();
-        Task<ResultadoHttpModelo> ObtenerPorIdAsync(int idMeet);
+
+        Task<IEnumerable<AttendeeModelo>> ObtenerParticipantes();
+        Task<IEnumerable<MeetModelo>> ObtenerSalasOcupadas(ValidarMeetModelo meet);
         Task<ResultadoHttpModelo> CrearAsync(MeetCrearModelo meet);
-        Task<ResultadoHttpModelo> ActualizarAsync(MeetActualizarModelo meet);
-        Task<ResultadoHttpModelo> EliminarAsync(int idMeet);
-        Task<ResultadoHttpModelo> ObtenerPorSalaAsync(int idSala);
-        Task<ResultadoHttpModelo> ObtenerPorFechaAsync(DateTime fecha);
-        Task<ResultadoHttpModelo> ObtenerPorRangoFechasAsync(DateTime fechaInicio, DateTime fechaFin);
+        Task<ResultadoHttpModelo> ActualizarAsync(MeetCrearModelo meet);
+        Task<ResultadoHttpModelo> ActualizarHorariosAsync(MeetCrearModelo meet);
+        Task<IEnumerable<MeetModelo>> ObtenerReunionesPorRango(DateTime startDate, DateTime endDate);
+        Task<ResultadoHttpModelo> RegistrarAsistencia(AsistenciaModelo asistencia);
+        Task<IEnumerable<AsistenciaModelo>> ObtenerParticipantes(string token);
+
     }
 }

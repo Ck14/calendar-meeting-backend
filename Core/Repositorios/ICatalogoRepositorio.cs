@@ -14,9 +14,15 @@ namespace Core.Repositorios
         Task<ResultadoHttpModelo> ObtenerRoles();
         
         // Métodos para catálogos de reuniones
-        Task<ResultadoHttpModelo> ObtenerSalas();
-        Task<ResultadoHttpModelo> ObtenerPrioridades();
-        Task<ResultadoHttpModelo> ObtenerEstadosFormulario();
-        Task<ResultadoHttpModelo> ObtenerTiposMeet();
+        Task<IEnumerable<SalaModelo>> ObtenerSalas();
+        Task<IEnumerable<PrioridadModelo>> ObtenerPrioridades();
+        Task<IEnumerable<EstadoFormularioModelo>> ObtenerEstadosFormulario();
+        Task<IEnumerable<TipoMeetModelo>> ObtenerTiposMeet();
+        Task<IEnumerable<RangoEdad>> ObtenerRangoEdad();
+        Task<IEnumerable<ComunidadLinguistica>> ObtenerLengua();
+        Task<IEnumerable<Pueblo>> ObtenerPueblo();
+        Task<IEnumerable<Discapacidad>> ObtenerDiscapacidad();
+        Task<TokenValidationResponse> ValidarTokenAsync(string token);
+
     }
 }

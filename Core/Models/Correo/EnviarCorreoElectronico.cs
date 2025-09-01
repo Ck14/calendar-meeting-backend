@@ -25,4 +25,27 @@ namespace Core.Models.Correo
         }
 
     }
+
+    public class EnviarCorreoEvento : EnviarCorreoElectronico
+    {
+        public ICollection<string> DestinatariosBCC { get; set; }
+        public string TituloEvento { get; set; }
+        public string DescripcionEvento { get; set; }
+        public DateTime FechaInicio { get; set; }
+        public DateTime FechaFin { get; set; }
+        public string Ubicacion { get; set; }
+        public string OrganizadorNombre { get; set; }
+        public string OrganizadorEmail { get; set; }
+        public string MensajePersonalizado { get; set; }
+        public string LinkReunion { get; set; }
+        public string InstruccionesAdicionales { get; set; }
+        public string MaterialPreparatorio { get; set; }
+        public bool RequiereRespuesta { get; set; }
+        public DateTime? FechaLimiteRespuesta { get; set; }
+
+        public EnviarCorreoEvento() : base()
+        {
+            DestinatariosBCC = new List<string>();
+        }
+    }
 }

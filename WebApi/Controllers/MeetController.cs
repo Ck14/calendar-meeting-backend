@@ -1,14 +1,20 @@
 using Core.Constantes;
 using Core.Models;
 using Core.Servicios;
+using Exceptionless;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using System;
 using System.Threading.Tasks;
 
 namespace WebApi.Controllers
 {
+
+
     [ApiController]
     [Route("api/[controller]")]
+    [Authorize]
     public class MeetController : ControllerBase
     {
         private readonly IMeetServicio _meetServicio;
@@ -19,37 +25,84 @@ namespace WebApi.Controllers
         }
 
         /// <summary>
-        /// Obtiene todas las reuniones
+        /// Obtiene el listado de usuarios para agregar en los destinatarios
         /// </summary>
-        /// <returns>Lista de todas las reuniones</returns>
-        [HttpGet]
-        public async Task<IActionResult> ObtenerTodas()
+        /// <returns></returns>         
+        [HttpGet("participantes")]                
+        public async Task<IActionResult> ObtenerParticipantes()
         {
-            var resultado = await _meetServicio.ObtenerTodasAsync();
-            return Ok(resultado);
+           
+            try
+            {
+                var resultado = await _meetServicio.ObtenerParticipantes();
+                return Ok(resultado);
+
+            }
+            catch (Exception ex)
+            {
+                ex.ToExceptionless();
+                return BadRequest(ex.Message);
+            }
+
         }
 
         /// <summary>
-        /// Obtiene una reunión por su ID
+        /// Reuniones para mostrar para el cambio de vistas
         /// </summary>
-        /// <param name="id">ID de la reunión</param>
-        /// <returns>Información de la reunión</returns>
-        [HttpGet("{id}")]
-        public async Task<IActionResult> ObtenerPorId(int id)
+        /// <param name="startDate"></param>
+        /// <param name="endDate"></param>
+        /// <returns></returns>
+        [HttpGet("reunionesPorRango")]
+        public async Task<IActionResult> ObtenerReunionesPorRango([FromQuery] string startDate, [FromQuery] string endDate)
         {
-            var resultado = await _meetServicio.ObtenerPorIdAsync(id);
-            
-            if (resultado.Estado == "warning")
-                return NotFound(resultado);
-            
-            return Ok(resultado);
+            try
+            {
+                // Validar que las fechas no sean nulas o vacías
+                if (string.IsNullOrEmpty(startDate))
+                {
+                    return BadRequest("La fecha de inicio es requerida");
+                }
+
+                if (string.IsNullOrEmpty(endDate))
+                {
+                    return BadRequest("La fecha de fin es requerida");
+                }
+
+                // Parsear las fechas como DateTime (solo fecha)
+                if (!DateTime.TryParse(startDate, out DateTime startDateParsed))
+                {
+                    return BadRequest("Formato de fecha de inicio inválido. Use formato YYYY-MM-DD");
+                }
+
+                if (!DateTime.TryParse(endDate, out DateTime endDateParsed))
+                {
+                    return BadRequest("Formato de fecha de fin inválido. Use formato YYYY-MM-DD");
+                }
+
+                // Validar que la fecha de inicio no sea mayor que la fecha de fin
+                if (startDateParsed > endDateParsed)
+                {
+                    return BadRequest("La fecha de inicio no puede ser mayor que la fecha de fin");
+                }
+
+                var resultado = await _meetServicio.ObtenerReunionesPorRango(startDateParsed, endDateParsed);
+                return Ok(resultado);
+
+            }
+            catch (Exception ex)
+            {
+                ex.ToExceptionless();
+                return BadRequest(ex.Message);
+            }
+
         }
 
+
         /// <summary>
-        /// Crea una nueva reunión
+        /// Registrar meet
         /// </summary>
-        /// <param name="meet">Datos de la reunión a crear</param>
-        /// <returns>Resultado de la creación</returns>
+        /// <param name="meet"></param>
+        /// <returns></returns>
         [HttpPost]
         public async Task<IActionResult> Crear([FromBody] MeetCrearModelo meet)
         {
@@ -62,22 +115,37 @@ namespace WebApi.Controllers
                 });
             }
 
-            var resultado = await _meetServicio.CrearAsync(meet);
-            
-            if (resultado.Estado == "error")
-                return BadRequest(resultado);
-            
-            return CreatedAtAction(nameof(ObtenerPorId), new { id = resultado.Resultado }, resultado);
+            try
+            {
+                var resultado = await _meetServicio.CrearAsync(meet);
+
+                if (resultado.Estado == "warning")
+                    return NotFound(resultado);
+
+                if (resultado.Estado == "error")
+                    return BadRequest(resultado);
+
+                return Ok(resultado);
+
+            }
+            catch (Exception ex)
+            {
+                ex.ToExceptionless();
+                return BadRequest(ex.Message);
+            }
+
+
         }
 
+
+
         /// <summary>
-        /// Actualiza una reunión existente
+        /// Actualizar meet
         /// </summary>
-        /// <param name="id">ID de la reunión</param>
-        /// <param name="meet">Datos actualizados de la reunión</param>
-        /// <returns>Resultado de la actualización</returns>
-        [HttpPut("{id}")]
-        public async Task<IActionResult> Actualizar(int id, [FromBody] MeetActualizarModelo meet)
+        /// <param name="meet"></param>
+        /// <returns></returns>
+        [HttpPut]
+        public async Task<IActionResult> Actualizar([FromBody] MeetCrearModelo meet)
         {
             if (!ModelState.IsValid)
             {
@@ -88,94 +156,155 @@ namespace WebApi.Controllers
                 });
             }
 
-            if (id != meet.IdMeet)
+            try
+            {
+                var resultado = await _meetServicio.ActualizarAsync(meet);
+
+                if (resultado.Estado == "warning")
+                    return NotFound(resultado);
+
+                if (resultado.Estado == "error")
+                    return BadRequest(resultado);
+
+                return Ok(resultado);
+
+            }
+            catch (Exception ex)
+            {
+                ex.ToExceptionless();
+                return BadRequest(ex.Message);
+            }
+        }
+
+
+
+        /// <summary>
+        /// Actualizar horario al momento de drag & drop
+        /// </summary>
+        /// <param name="meet"></param>
+        /// <returns></returns>
+        [HttpPut("actualizarHorarios")]
+        public async Task<IActionResult> ActualizarHorarios([FromBody] MeetCrearModelo meet)
+        {
+            if (!ModelState.IsValid)
             {
                 return BadRequest(new ResultadoHttpModelo(EstadoSolicitudHttp.error)
                 {
-                    Mensaje = "El ID de la URL no coincide con el ID del modelo",
-                    Titulo = "Validación de ID"
+                    Mensaje = "Datos de entrada inválidos",
+                    Titulo = "Validación de Modelo"
                 });
             }
 
-            var resultado = await _meetServicio.ActualizarAsync(meet);
-            
-            if (resultado.Estado == "warning")
-                return NotFound(resultado);
-            
-            if (resultado.Estado == "error")
-                return BadRequest(resultado);
-            
-            return Ok(resultado);
+            try
+            {
+                var resultado = await _meetServicio.ActualizarHorariosAsync(meet);
+
+                if (resultado.Estado == "warning")
+                    return NotFound(resultado);
+
+                if (resultado.Estado == "error")
+                    return BadRequest(resultado);
+
+                return Ok(resultado);
+
+            }
+            catch (Exception ex)
+            {
+                ex.ToExceptionless();
+                return BadRequest(ex.Message);
+            }
+
+
         }
 
-        /// <summary>
-        /// Elimina una reunión
-        /// </summary>
-        /// <param name="id">ID de la reunión a eliminar</param>
-        /// <returns>Resultado de la eliminación</returns>
-        [HttpDelete("{id}")]
-        public async Task<IActionResult> Eliminar(int id)
-        {
-            var resultado = await _meetServicio.EliminarAsync(id);
-            
-            if (resultado.Estado == "warning")
-                return NotFound(resultado);
-            
-            if (resultado.Estado == "error")
-                return BadRequest(resultado);
-            
-            return Ok(resultado);
-        }
+
 
         /// <summary>
-        /// Obtiene reuniones por sala
+        /// Comprobación de salas ocupadas
         /// </summary>
-        /// <param name="idSala">ID de la sala</param>
-        /// <returns>Lista de reuniones de la sala</returns>
-        [HttpGet("sala/{idSala}")]
-        public async Task<IActionResult> ObtenerPorSala(int idSala)
+        /// <param name="meet"></param>
+        /// <returns></returns>
+        [HttpPost("salasOcupadas")]
+        public async Task<IActionResult> ObtenerSalasOcupadas([FromBody] ValidarMeetModelo meet)
         {
-            var resultado = await _meetServicio.ObtenerPorSalaAsync(idSala);
-            
-            if (resultado.Estado == "error")
-                return BadRequest(resultado);
-            
-            return Ok(resultado);
+
+            try
+            {
+                var resultado = await _meetServicio.ObtenerSalasOcupadas(meet);
+                return Ok(resultado);
+
+            }
+            catch (Exception ex)
+            {
+                ex.ToExceptionless();
+                return BadRequest(ex.Message);
+            }
+
         }
 
-        /// <summary>
-        /// Obtiene reuniones por fecha
-        /// </summary>
-        /// <param name="fecha">Fecha de las reuniones (formato: yyyy-MM-dd)</param>
-        /// <returns>Lista de reuniones de la fecha</returns>
-        [HttpGet("fecha/{fecha:datetime}")]
-        public async Task<IActionResult> ObtenerPorFecha(DateTime fecha)
-        {
-            var resultado = await _meetServicio.ObtenerPorFechaAsync(fecha);
-            
-            if (resultado.Estado == "error")
-                return BadRequest(resultado);
-            
-            return Ok(resultado);
-        }
+
 
         /// <summary>
-        /// Obtiene reuniones por rango de fechas
+        /// Registrar Asistencia, método publico
         /// </summary>
-        /// <param name="fechaInicio">Fecha de inicio (formato: yyyy-MM-dd)</param>
-        /// <param name="fechaFin">Fecha de fin (formato: yyyy-MM-dd)</param>
-        /// <returns>Lista de reuniones en el rango de fechas</returns>
-        [HttpGet("rango-fechas")]
-        public async Task<IActionResult> ObtenerPorRangoFechas(
-            [FromQuery] DateTime fechaInicio, 
-            [FromQuery] DateTime fechaFin)
+        /// <param name="asistencia"></param>
+        /// <returns></returns>
+        [AllowAnonymous]
+        [HttpPost("Asistencia")]        
+        public async Task<IActionResult> RegistrarAsistencia([FromBody] AsistenciaModelo asistencia)
         {
-            var resultado = await _meetServicio.ObtenerPorRangoFechasAsync(fechaInicio, fechaFin);
-            
-            if (resultado.Estado == "error")
-                return BadRequest(resultado);
-            
-            return Ok(resultado);
+            try
+            {
+                var resultado = await _meetServicio.RegistrarAsistencia(asistencia);
+
+                if (resultado.Estado == "warning")
+                    return NotFound(resultado);
+
+                if (resultado.Estado == "error")
+                    return BadRequest(resultado);
+
+                return Ok(resultado);
+
+            }
+            catch (Exception ex)
+            {
+                ex.ToExceptionless();
+                return BadRequest(ex.Message);
+            }
+
+
         }
+
+        [AllowAnonymous]
+        [HttpGet("participantes/consulta")]
+        public async Task<IActionResult> ConsultaParticipantes(string token)
+        {
+
+            try
+            {
+                var resultado = await _meetServicio.ObtenerParticipantes(token);
+                return Ok(resultado);
+
+            }
+            catch (Exception ex)
+            {
+                ex.ToExceptionless();
+                return BadRequest(ex.Message);
+            }
+
+        }
+
+
+
+
+
+
+
+
+
+
+
+
+
     }
 }

@@ -1,4 +1,5 @@
-﻿using Core.Models.Correo;
+﻿using Core.Models;
+using Core.Models.Correo;
 using Exceptionless;
 using Microsoft.Extensions.Configuration;
 using Newtonsoft.Json;
@@ -261,6 +262,88 @@ namespace Core.Correo.Servicios
             }
 
         }// fin
+
+
+
+        async Task<string> ICorreoServicio.EnviarCorreoInvitacion(MeetCrearModelo meet)
+        {
+            var correo = new EnviarCorreoEvento();
+
+            // Construcción de campos básicos
+            correo.Asunto = $"Invitación: {meet.Titulo}";
+            correo.Remitente = configuration.GetSection("ServidorCorreo:remitente").Value;
+            correo.Sistema = configuration.GetSection("ServidorCorreo:ApiKey").Value;
+            //correo.NombrePlantilla = "plantillaCorreo2";
+
+            // Destinatarios (los invitados de la reunión)
+            if (meet.invitados != null)
+                correo.Destinatarios = meet.invitados.ToList();
+
+            // Se podría agregar copia oculta si aplica
+            //correo.DestinatariosBCC = new List<string>();
+
+            // Título y descripción del evento
+            correo.TituloEvento = meet.Titulo;
+            correo.DescripcionEvento = meet.Descripcion ?? "Reunión institucional";
+
+            // Fechas
+            correo.FechaInicio = meet.FechaInicio;
+            correo.FechaFin = meet.FechaFin ?? meet.FechaInicio.AddHours(1); // default: 1 hora si no mandan fin
+
+            // Ubicación (se podría mapear desde IdSala con otra tabla/configuración)
+            correo.Ubicacion = $"Sala: {meet.Sala} - Ministerio de Finanzas Públicas";
+
+            // Organizador (siempre el primero de organizadores o default)
+            correo.OrganizadorNombre = "Minfin Meetings";
+            correo.OrganizadorEmail = string.Join(",", meet.organizadores ?? Array.Empty<string>());
+
+            // Mensaje personalizado
+            correo.MensajePersonalizado = "Esta reunión es importante para la institución. Su participación es fundamental.";
+
+            // Link de la reunión (puede salir de config o del modelo si lo agregas después)
+            //correo.LinkReunion = configuration.GetSection("ServidorCorreo:linkReunionDefault").Value;
+
+            // Instrucciones y material (estáticos o parametrizables)
+            //correo.InstruccionesAdicionales = "INSTRUCCIONES:\n• Llegar puntual\n• Revisar documentos previos\n• Traer laptop con VPN";
+            //correo.MaterialPreparatorio = "Material disponible en SharePoint: https://sharepoint.minfin.gob.gt";
+
+            // Confirmación de asistencia
+            correo.RequiereRespuesta = true;
+            correo.FechaLimiteRespuesta = meet.FechaInicio.AddDays(-1); // un día antes por default
+
+            // Modelo usado dentro de la plantilla
+            correo.Modelo = new
+            {
+                mensaje = "Te invitamos a participar en nuestra reunión.",
+                url = correo.LinkReunion
+            };
+
+            try
+            {
+                using (var client = new HttpClient())
+                {
+                    var mailServer = configuration.GetSection("ServidorCorreo:servidor").Value;
+
+                    string jsonValue = JsonConvert.SerializeObject(
+                        correo,
+                        new JsonSerializerSettings
+                        {
+                            NullValueHandling = NullValueHandling.Ignore, // no incluir nulls
+                            Formatting = Formatting.Indented
+                        });
+
+                    var response = await client.PostAsync(mailServer, new StringContent(jsonValue, Encoding.UTF8, "application/json"));
+                    var result = await response.Content.ReadAsStringAsync();
+                    return result;
+                }
+            }
+            catch (Exception ex)
+            {
+                ex.ToExceptionless();
+                throw;
+            }
+        }
+
 
     }// end class
 }// end namespace

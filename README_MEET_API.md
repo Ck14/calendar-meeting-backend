@@ -207,6 +207,50 @@ GET /api/catalogosmeet/tipos-meet
 - El token se genera usando caracteres alfanuméricos (A-Z, 0-9)
 
 ### Consultas con Joins
+
+## 📋 **Modelos de Catálogos**
+
+### **SalaModelo**
+```json
+{
+  "idSala": 1,
+  "nombreSala": "Sala de Juntas 1",
+  "nivel": 1,
+  "habilitada": "1",
+  "fechaCreacion": "2024-01-15T10:00:00",
+  "descripcion": "Sala Sala de Juntas 1 - Nivel 1"
+}
+```
+
+### **PrioridadModelo**
+```json
+{
+  "idPrioridad": 2,
+  "nombrePrioridad": "Media",
+  "fechaCreacion": "2024-01-15T10:00:00",
+  "descripcion": "Media"
+}
+```
+
+### **EstadoFormularioModelo**
+```json
+{
+  "idEstado": 1,
+  "nombre": "Pendiente",
+  "fechaCreacion": "2024-01-15T10:00:00",
+  "descripcion": "Pendiente"
+}
+```
+
+### **TipoMeetModelo**
+```json
+{
+  "idTipoMeet": 1,
+  "nombre": "Reunión de Trabajo",
+  "fechaCreacion": "2024-01-15T10:00:00",
+  "descripcion": "Reunión de Trabajo"
+}
+```
 - Las consultas incluyen información relacionada de las tablas de catálogo
 - Se muestran nombres descriptivos en lugar de solo IDs
 

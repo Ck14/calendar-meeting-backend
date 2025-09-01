@@ -7,13 +7,13 @@ namespace Core.Repositorios
 {
     public interface IMeetRepositorio
     {
-        Task<ResultadoHttpModelo> ObtenerTodasAsync();
-        Task<ResultadoHttpModelo> ObtenerPorIdAsync(int idMeet);
-        Task<ResultadoHttpModelo> CrearAsync(MeetCrearModelo meet);
-        Task<ResultadoHttpModelo> ActualizarAsync(MeetActualizarModelo meet);
-        Task<ResultadoHttpModelo> EliminarAsync(int idMeet);
-        Task<ResultadoHttpModelo> ObtenerPorSalaAsync(int idSala);
-        Task<ResultadoHttpModelo> ObtenerPorFechaAsync(DateTime fecha);
-        Task<ResultadoHttpModelo> ObtenerPorRangoFechasAsync(DateTime fechaInicio, DateTime fechaFin);
+        Task<IEnumerable<AttendeeModelo>> ObtenerParticipantes();
+        Task<IEnumerable<MeetModelo>> GetSalasOcupadas(ValidarMeetModelo meet);
+        Task<int> CrearAsync(MeetCrearModelo meet);
+        Task<bool> ActualizarAsync(MeetCrearModelo meet);
+        Task<bool> ActualizarHorariosAsync(MeetCrearModelo meet);
+        Task<IEnumerable<MeetModelo>> ObtenerReunionesPorRango(DateTime startDate, DateTime endDate);
+        Task<int> RegistrarAsistencia(AsistenciaModelo asistencia);
+        Task<IEnumerable<AsistenciaModelo>> ObtenerParticipantes(string token);
     }
 }

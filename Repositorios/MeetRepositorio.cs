@@ -18,425 +18,269 @@ namespace Repositorios
             _connectionProvider = connectionProvider;
         }
 
-        public async Task<ResultadoHttpModelo> ObtenerTodasAsync()
+
+        public async Task<IEnumerable<AttendeeModelo>> ObtenerParticipantes()
         {
-            try
+            using (var connection = await _connectionProvider.OpenAsync())
             {
-                using var connection = await _connectionProvider.OpenAsync();
-                
-                var sql = @"
-                    SELECT 
-                        m.ID_MEET IdMeet,
-                        m.TITULO Titulo,
-                        m.DESCRIPCION Descripcion,
-                        m.FECHA_INICIO FechaInicio,
-                        m.HORA_INICIO HoraInicio,
-                        m.FECHA_FIN FechaFin,
-                        m.HORA_FIN HoraFin,
-                        m.TOKEN_QR TokenQr,
-                        m.ID_SALA IdSala,
-                        m.ID_PRIORIDAD IdPrioridad,
-                        m.ID_ESTADO IdEstado,
-                        m.ID_TIPO_MEET IdTipoMeet,
-                        s.NOMBRE_SALA NombreSala,
-                        p.NOMBRE_PRIORIDAD NombrePrioridad,
-                        e.NOMBRE NombreEstado,
-                        t.NOMBRE NombreTipoMeet
-                    FROM MM_MEET m
-                    LEFT JOIN MM_SALA s ON m.ID_SALA = s.ID_SALA
-                    LEFT JOIN MM_PRIORIDAD p ON m.ID_PRIORIDAD = p.ID_PRIORIDAD
-                    LEFT JOIN MM_ESTADO_FORMULARIO e ON m.ID_ESTADO = e.ID_ESTADO
-                    LEFT JOIN MM_TIPO_MEET t ON m.ID_TIPO_MEET = t.ID_TIPO_MEET
-                    ORDER BY m.FECHA_INICIO DESC";
-                
-                var meets = await connection.QueryAsync<MeetModelo>(sql);
-                connection.Close();
-
-                return new ResultadoHttpModelo(EstadoSolicitudHttp.success)
+                try
                 {
-                    Mensaje = "Reuniones obtenidas exitosamente",
-                    Titulo = "Consulta de Reuniones",
-                    Resultado = meets
-                };
-            }
-            catch (Exception ex)
-            {
-                return new ResultadoHttpModelo(EstadoSolicitudHttp.error)
-                {
-                    Mensaje = $"Error al obtener reuniones: {ex.Message}",
-                    Titulo = "Error en Consulta"
-                };
-            }
-        }
+                    var sql = @"SELECT nombre, correo_electronico correo FROM vw_empleados_clima_laboral";
+                    var attendees = await connection.QueryAsync<AttendeeModelo>(sql);
+                    return attendees;
 
-        public async Task<ResultadoHttpModelo> ObtenerPorIdAsync(int idMeet)
-        {
-            try
-            {
-                using var connection = await _connectionProvider.OpenAsync();
-                
-                var sql = @"
-                    SELECT 
-                        m.ID_MEET IdMeet,
-                        m.TITULO Titulo,
-                        m.DESCRIPCION Descripcion,
-                        m.FECHA_INICIO FechaInicio,
-                        m.HORA_INICIO HoraInicio,
-                        m.FECHA_FIN FechaFin,
-                        m.HORA_FIN HoraFin,
-                        m.TOKEN_QR TokenQr,
-                        m.ID_SALA IdSala,
-                        m.ID_PRIORIDAD IdPrioridad,
-                        m.ID_ESTADO IdEstado,
-                        m.ID_TIPO_MEET IdTipoMeet,
-                        s.NOMBRE_SALA NombreSala,
-                        p.NOMBRE_PRIORIDAD NombrePrioridad,
-                        e.NOMBRE NombreEstado,
-                        t.NOMBRE NombreTipoMeet
-                    FROM MM_MEET m
-                    LEFT JOIN MM_SALA s ON m.ID_SALA = s.ID_SALA
-                    LEFT JOIN MM_PRIORIDAD p ON m.ID_PRIORIDAD = p.ID_PRIORIDAD
-                    LEFT JOIN MM_ESTADO_FORMULARIO e ON m.ID_ESTADO = e.ID_ESTADO
-                    LEFT JOIN MM_TIPO_MEET t ON m.ID_TIPO_MEET = t.ID_TIPO_MEET
-                    WHERE m.ID_MEET = :IdMeet";
-                
-                var meet = await connection.QueryFirstOrDefaultAsync<MeetModelo>(sql, new { IdMeet = idMeet });
-                connection.Close();
-
-                if (meet == null)
-                {
-                    return new ResultadoHttpModelo(EstadoSolicitudHttp.warning)
-                    {
-                        Mensaje = "No se encontró la reunión especificada",
-                        Titulo = "Reunión No Encontrada"
-                    };
                 }
-
-                return new ResultadoHttpModelo(EstadoSolicitudHttp.success)
+                catch (Exception)
                 {
-                    Mensaje = "Reunión obtenida exitosamente",
-                    Titulo = "Consulta de Reunión",
-                    Resultado = meet
-                };
-            }
-            catch (Exception ex)
-            {
-                return new ResultadoHttpModelo(EstadoSolicitudHttp.error)
-                {
-                    Mensaje = $"Error al obtener reunión: {ex.Message}",
-                    Titulo = "Error en Consulta"
-                };
-            }
-        }
 
-        public async Task<ResultadoHttpModelo> CrearAsync(MeetCrearModelo meet)
-        {
-            try
-            {
-                using var connection = await _connectionProvider.OpenAsync();
-                
-                // Generar token QR único
-                var tokenQr = GenerarTokenQr();
-                
-                var sql = @"
-                    INSERT INTO MM_MEET (
-                        TITULO, DESCRIPCION, FECHA_INICIO, HORA_INICIO, 
-                        FECHA_FIN, HORA_FIN, TOKEN_QR, ID_SALA, 
-                        ID_PRIORIDAD, ID_ESTADO, ID_TIPO_MEET
-                    ) VALUES (
-                        :Titulo, :Descripcion, :FechaInicio, :HoraInicio,
-                        :FechaFin, :HoraFin, :TokenQr, :IdSala,
-                        :IdPrioridad, :IdEstado, :IdTipoMeet
-                    ) RETURNING ID_MEET INTO :IdMeet";
-                
-                var parameters = new
-                {
-                    meet.Titulo,
-                    meet.Descripcion,
-                    meet.FechaInicio,
-                    meet.HoraInicio,
-                    meet.FechaFin,
-                    meet.HoraFin,
-                    TokenQr = tokenQr,
-                    meet.IdSala,
-                    meet.IdPrioridad,
-                    meet.IdEstado,
-                    meet.IdTipoMeet
-                };
-
-                var idMeet = await connection.QuerySingleAsync<int>(sql, parameters);
-                connection.Close();
-
-                return new ResultadoHttpModelo(EstadoSolicitudHttp.success)
-                {
-                    Mensaje = "Reunión creada exitosamente",
-                    Titulo = "Creación de Reunión",
-                    Resultado = new { IdMeet = idMeet, TokenQr = tokenQr }
-                };
-            }
-            catch (Exception ex)
-            {
-                return new ResultadoHttpModelo(EstadoSolicitudHttp.error)
-                {
-                    Mensaje = $"Error al crear reunión: {ex.Message}",
-                    Titulo = "Error en Creación"
-                };
-            }
-        }
-
-        public async Task<ResultadoHttpModelo> ActualizarAsync(MeetActualizarModelo meet)
-        {
-            try
-            {
-                using var connection = await _connectionProvider.OpenAsync();
-                
-                var sql = @"
-                    UPDATE MM_MEET SET 
-                        TITULO = :Titulo,
-                        DESCRIPCION = :Descripcion,
-                        FECHA_INICIO = :FechaInicio,
-                        HORA_INICIO = :HoraInicio,
-                        FECHA_FIN = :FechaFin,
-                        HORA_FIN = :HoraFin,
-                        ID_SALA = :IdSala,
-                        ID_PRIORIDAD = :IdPrioridad,
-                        ID_ESTADO = :IdEstado,
-                        ID_TIPO_MEET = :IdTipoMeet
-                    WHERE ID_MEET = :IdMeet";
-                
-                var parameters = new
-                {
-                    meet.IdMeet,
-                    meet.Titulo,
-                    meet.Descripcion,
-                    meet.FechaInicio,
-                    meet.HoraInicio,
-                    meet.FechaFin,
-                    meet.HoraFin,
-                    meet.IdSala,
-                    meet.IdPrioridad,
-                    meet.IdEstado,
-                    meet.IdTipoMeet
-                };
-
-                var rowsAffected = await connection.ExecuteAsync(sql, parameters);
-                connection.Close();
-
-                if (rowsAffected == 0)
-                {
-                    return new ResultadoHttpModelo(EstadoSolicitudHttp.warning)
-                    {
-                        Mensaje = "No se encontró la reunión para actualizar",
-                        Titulo = "Reunión No Encontrada"
-                    };
+                    throw;
                 }
-
-                return new ResultadoHttpModelo(EstadoSolicitudHttp.success)
-                {
-                    Mensaje = "Reunión actualizada exitosamente",
-                    Titulo = "Actualización de Reunión"
-                };
-            }
-            catch (Exception ex)
-            {
-                return new ResultadoHttpModelo(EstadoSolicitudHttp.error)
-                {
-                    Mensaje = $"Error al actualizar reunión: {ex.Message}",
-                    Titulo = "Error en Actualización"
-                };
             }
         }
 
-        public async Task<ResultadoHttpModelo> EliminarAsync(int idMeet)
+        public async Task<IEnumerable<MeetModelo>> GetSalasOcupadas(ValidarMeetModelo meet)
         {
-            try
-            {
-                using var connection = await _connectionProvider.OpenAsync();
-                
-                var sql = "DELETE FROM MM_MEET WHERE ID_MEET = :IdMeet";
-                
-                var rowsAffected = await connection.ExecuteAsync(sql, new { IdMeet = idMeet });
-                connection.Close();
 
-                if (rowsAffected == 0)
+            using (var connection = await _connectionProvider.OpenAsync())
+            {
+                try
                 {
-                    return new ResultadoHttpModelo(EstadoSolicitudHttp.warning)
+                    var sql = @"  SELECT m.ID_MEET,
+                                    m.TITULO,
+                                    m.HORA_INICIO FechaInicio,
+                                    m.HORA_FIN FechaFin
+                            FROM MM_MEET m
+                            WHERE     m.ID_SALA = :IdSala
+                                    AND (m.HORA_INICIO < :FechaFin AND m.HORA_FIN > :FechaInicio)
+                            ORDER BY m.HORA_INICIO";
+
+                    var parameters = new
                     {
-                        Mensaje = "No se encontró la reunión para eliminar",
-                        Titulo = "Reunión No Encontrada"
+                        meet.IdSala,
+                        meet.FechaInicio,
+                        meet.FechaFin
                     };
+
+                    var salasOcupadas = await connection.QueryAsync<MeetModelo>(sql, parameters);
+                    return salasOcupadas;
+
                 }
+                catch (Exception)
+                {
 
-                return new ResultadoHttpModelo(EstadoSolicitudHttp.success)
-                {
-                    Mensaje = "Reunión eliminada exitosamente",
-                    Titulo = "Eliminación de Reunión"
-                };
+                    throw;
+                }
             }
-            catch (Exception ex)
+
+        }
+
+
+        public async Task<int> CrearAsync(MeetCrearModelo meet)
+        {
+            var tokenQr = GenerarTokenQr();
+
+            var sql = @"INSERT INTO MM_MEET (
+                            ID_MEET, TITULO, DESCRIPCION, HORA_INICIO, 
+                             HORA_FIN, TOKEN_QR, ID_SALA, 
+                            ID_PRIORIDAD, ID_ESTADO, ID_TIPO_MEET, INVITADOS, ORGANIZADORES
+                        ) VALUES (
+                            :IdMeet, :Titulo, :Descripcion, :FechaInicio, 
+                            :FechaFin,  :TokenQr, :IdSala,
+                            :IdPrioridad, :IdEstado, :IdTipoMeet, :Invitados, :Organizadores
+                        )";
+
+            using (var connection = await _connectionProvider.OpenAsync())
             {
-                return new ResultadoHttpModelo(EstadoSolicitudHttp.error)
+                using (var trx = connection.BeginTransaction())
                 {
-                    Mensaje = $"Error al eliminar reunión: {ex.Message}",
-                    Titulo = "Error en Eliminación"
-                };
+                    try
+                    {
+                        var sqlGetNextId = "SELECT SEQ_MM_MEET.NEXTVAL FROM DUAL";
+                        var idMeet = await connection.QuerySingleAsync<int>(sqlGetNextId);
+
+                        var invitadosStr = string.Join(",", meet.invitados ?? Array.Empty<string>());
+                        var organizadoresStr = string.Join(",", meet.organizadores ?? Array.Empty<string>());
+
+                        var parameters = new
+                        {
+                            IdMeet = idMeet,
+                            meet.Titulo,
+                            meet.Descripcion,
+                            meet.FechaInicio,
+                            meet.FechaFin,
+                            TokenQr = tokenQr,
+                            meet.IdSala,
+                            meet.IdPrioridad,
+                            meet.IdEstado,
+                            meet.IdTipoMeet,
+                            Invitados = invitadosStr.ToUpper(),
+                            Organizadores = organizadoresStr.ToUpper()
+                        };
+
+                        await connection.ExecuteAsync(sql, parameters);
+                        trx.Commit();
+                        return idMeet;
+                    }
+                    catch (Exception)
+                    {
+                        trx.Rollback();
+                        throw;
+                    }
+                }
             }
         }
 
-        public async Task<ResultadoHttpModelo> ObtenerPorSalaAsync(int idSala)
-        {
-            try
-            {
-                using var connection = await _connectionProvider.OpenAsync();
-                
-                var sql = @"
-                    SELECT 
-                        m.ID_MEET IdMeet,
-                        m.TITULO Titulo,
-                        m.DESCRIPCION Descripcion,
-                        m.FECHA_INICIO FechaInicio,
-                        m.HORA_INICIO HoraInicio,
-                        m.FECHA_FIN FechaFin,
-                        m.HORA_FIN HoraFin,
-                        m.TOKEN_QR TokenQr,
-                        m.ID_SALA IdSala,
-                        m.ID_PRIORIDAD IdPrioridad,
-                        m.ID_ESTADO IdEstado,
-                        m.ID_TIPO_MEET IdTipoMeet,
-                        s.NOMBRE_SALA NombreSala,
-                        p.NOMBRE_PRIORIDAD NombrePrioridad,
-                        e.NOMBRE NombreEstado,
-                        t.NOMBRE NombreTipoMeet
-                    FROM MM_MEET m
-                    LEFT JOIN MM_SALA s ON m.ID_SALA = s.ID_SALA
-                    LEFT JOIN MM_PRIORIDAD p ON m.ID_PRIORIDAD = p.ID_PRIORIDAD
-                    LEFT JOIN MM_ESTADO_FORMULARIO e ON m.ID_ESTADO = e.ID_ESTADO
-                    LEFT JOIN MM_TIPO_MEET t ON m.ID_TIPO_MEET = t.ID_TIPO_MEET
-                    WHERE m.ID_SALA = :IdSala
-                    ORDER BY m.FECHA_INICIO DESC";
-                
-                var meets = await connection.QueryAsync<MeetModelo>(sql, new { IdSala = idSala });
-                connection.Close();
 
-                return new ResultadoHttpModelo(EstadoSolicitudHttp.success)
-                {
-                    Mensaje = "Reuniones por sala obtenidas exitosamente",
-                    Titulo = "Consulta de Reuniones por Sala",
-                    Resultado = meets
-                };
-            }
-            catch (Exception ex)
+
+
+        public async Task<bool> ActualizarAsync(MeetCrearModelo meet)
+        {
+            
+
+            var sql = @"UPDATE MM_MEET
+                        SET TITULO = :titulo,
+                            DESCRIPCION = :descripcion,
+                            HORA_INICIO = :FechaInicio,
+                            HORA_FIN = :FechaFin,                            
+                            ID_SALA = :IdSala,
+                            ID_PRIORIDAD = :IdPrioridad,
+                            ID_ESTADO = :IdEstado,
+                            ID_TIPO_MEET = :IdTipoMeet,
+                            INVITADOS = :Invitados,
+                            ORGANIZADORES = :Organizadores
+                        WHERE ID_MEET = :IdMeet";
+
+            using (var connection = await _connectionProvider.OpenAsync())
             {
-                return new ResultadoHttpModelo(EstadoSolicitudHttp.error)
+                using (var trx = connection.BeginTransaction())
                 {
-                    Mensaje = $"Error al obtener reuniones por sala: {ex.Message}",
-                    Titulo = "Error en Consulta"
-                };
+                    try
+                    {
+                        
+
+                        var invitadosStr = string.Join(",", meet.invitados ?? Array.Empty<string>());
+                        var organizadoresStr = string.Join(",", meet.organizadores ?? Array.Empty<string>());
+
+                        var parameters = new
+                        {
+                            meet.IdMeet,
+                            meet.Titulo,
+                            meet.Descripcion,
+                            meet.FechaInicio,
+                            meet.FechaFin,                            
+                            meet.IdSala,
+                            meet.IdPrioridad,
+                            meet.IdEstado,
+                            meet.IdTipoMeet,
+                            Invitados = invitadosStr.ToUpper(),
+                            Organizadores = organizadoresStr.ToUpper()
+                        };
+
+                        await connection.ExecuteAsync(sql, parameters);                        
+                        trx.Commit();
+                        return true;
+                    }
+                    catch (Exception)
+                    {
+                        trx.Rollback();
+                        throw;
+                    }
+                }
             }
         }
 
-        public async Task<ResultadoHttpModelo> ObtenerPorFechaAsync(DateTime fecha)
-        {
-            try
-            {
-                using var connection = await _connectionProvider.OpenAsync();
-                
-                var sql = @"
-                    SELECT 
-                        m.ID_MEET IdMeet,
-                        m.TITULO Titulo,
-                        m.DESCRIPCION Descripcion,
-                        m.FECHA_INICIO FechaInicio,
-                        m.HORA_INICIO HoraInicio,
-                        m.FECHA_FIN FechaFin,
-                        m.HORA_FIN HoraFin,
-                        m.TOKEN_QR TokenQr,
-                        m.ID_SALA IdSala,
-                        m.ID_PRIORIDAD IdPrioridad,
-                        m.ID_ESTADO IdEstado,
-                        m.ID_TIPO_MEET IdTipoMeet,
-                        s.NOMBRE_SALA NombreSala,
-                        p.NOMBRE_PRIORIDAD NombrePrioridad,
-                        e.NOMBRE NombreEstado,
-                        t.NOMBRE NombreTipoMeet
-                    FROM MM_MEET m
-                    LEFT JOIN MM_SALA s ON m.ID_SALA = s.ID_SALA
-                    LEFT JOIN MM_PRIORIDAD p ON m.ID_PRIORIDAD = p.ID_PRIORIDAD
-                    LEFT JOIN MM_ESTADO_FORMULARIO e ON m.ID_ESTADO = e.ID_ESTADO
-                    LEFT JOIN MM_TIPO_MEET t ON m.ID_TIPO_MEET = t.ID_TIPO_MEET
-                    WHERE TRUNC(m.FECHA_INICIO) = :Fecha
-                    ORDER BY m.FECHA_INICIO ASC";
-                
-                var meets = await connection.QueryAsync<MeetModelo>(sql, new { Fecha = fecha.Date });
-                connection.Close();
 
-                return new ResultadoHttpModelo(EstadoSolicitudHttp.success)
-                {
-                    Mensaje = "Reuniones por fecha obtenidas exitosamente",
-                    Titulo = "Consulta de Reuniones por Fecha",
-                    Resultado = meets
-                };
-            }
-            catch (Exception ex)
+
+        public async Task<bool> ActualizarHorariosAsync(MeetCrearModelo meet)
+        {
+
+
+            var sql = @"UPDATE MM_MEET
+                        SET HORA_INICIO = :FechaInicio,
+                            HORA_FIN = :FechaFin                            
+                        WHERE ID_MEET = :IdMeet";
+
+            using (var connection = await _connectionProvider.OpenAsync())
             {
-                return new ResultadoHttpModelo(EstadoSolicitudHttp.error)
+                using (var trx = connection.BeginTransaction())
                 {
-                    Mensaje = $"Error al obtener reuniones por fecha: {ex.Message}",
-                    Titulo = "Error en Consulta"
-                };
+                    try
+                    {
+                        var invitadosStr = string.Join(",", meet.invitados ?? Array.Empty<string>());
+                        var organizadoresStr = string.Join(",", meet.organizadores ?? Array.Empty<string>());
+
+                        var parameters = new
+                        {
+                            meet.IdMeet,                            
+                            meet.FechaInicio,
+                            meet.FechaFin                            
+                        };
+
+                        await connection.ExecuteAsync(sql, parameters);
+                        trx.Commit();
+                        return true;
+                    }
+                    catch (Exception)
+                    {
+                        trx.Rollback();
+                        throw;
+                    }
+                }
             }
         }
 
-        public async Task<ResultadoHttpModelo> ObtenerPorRangoFechasAsync(DateTime fechaInicio, DateTime fechaFin)
-        {
-            try
-            {
-                using var connection = await _connectionProvider.OpenAsync();
-                
-                var sql = @"
-                    SELECT 
-                        m.ID_MEET IdMeet,
-                        m.TITULO Titulo,
-                        m.DESCRIPCION Descripcion,
-                        m.FECHA_INICIO FechaInicio,
-                        m.HORA_INICIO HoraInicio,
-                        m.FECHA_FIN FechaFin,
-                        m.HORA_FIN HoraFin,
-                        m.TOKEN_QR TokenQr,
-                        m.ID_SALA IdSala,
-                        m.ID_PRIORIDAD IdPrioridad,
-                        m.ID_ESTADO IdEstado,
-                        m.ID_TIPO_MEET IdTipoMeet,
-                        s.NOMBRE_SALA NombreSala,
-                        p.NOMBRE_PRIORIDAD NombrePrioridad,
-                        e.NOMBRE NombreEstado,
-                        t.NOMBRE NombreTipoMeet
-                    FROM MM_MEET m
-                    LEFT JOIN MM_SALA s ON m.ID_SALA = s.ID_SALA
-                    LEFT JOIN MM_PRIORIDAD p ON m.ID_PRIORIDAD = p.ID_PRIORIDAD
-                    LEFT JOIN MM_ESTADO_FORMULARIO e ON m.ID_ESTADO = e.ID_ESTADO
-                    LEFT JOIN MM_TIPO_MEET t ON m.ID_TIPO_MEET = t.ID_TIPO_MEET
-                    WHERE TRUNC(m.FECHA_INICIO) BETWEEN :FechaInicio AND :FechaFin
-                    ORDER BY m.FECHA_INICIO ASC";
-                
-                var meets = await connection.QueryAsync<MeetModelo>(sql, 
-                    new { FechaInicio = fechaInicio.Date, FechaFin = fechaFin.Date });
-                connection.Close();
 
-                return new ResultadoHttpModelo(EstadoSolicitudHttp.success)
-                {
-                    Mensaje = "Reuniones por rango de fechas obtenidas exitosamente",
-                    Titulo = "Consulta de Reuniones por Rango",
-                    Resultado = meets
-                };
-            }
-            catch (Exception ex)
+
+
+
+
+
+        public async Task<IEnumerable<MeetModelo>> ObtenerReunionesPorRango(DateTime startDate, DateTime endDate)
+        {
+            using (var connection = await _connectionProvider.OpenAsync())
             {
-                return new ResultadoHttpModelo(EstadoSolicitudHttp.error)
+                try
                 {
-                    Mensaje = $"Error al obtener reuniones por rango de fechas: {ex.Message}",
-                    Titulo = "Error en Consulta"
-                };
+                    // TODO: Agregar aquí la query SQL para obtener reuniones por rango de fechas
+                    var sql = @"SELECT m.titulo,
+                                       m.descripcion,
+                                       m.hora_inicio          fechaInicio,
+                                       m.hora_inicio          horaInicio,
+                                       m.hora_fin             fechaFin,
+                                       m.hora_fin             horaFin,
+                                       m.id_sala              idSala,
+                                       m.id_prioridad         idPrioridad,
+                                       m.id_estado            idEstado,
+                                       m.id_tipo_meet         idTipoMeet,
+                                       m.invitados,
+                                       m.ORGANIZADORES,
+                                       m.id_meet              IdMeet,
+                                       s.nombre_sala          NombreSala,
+                                       p.NOMBRE_PRIORIDAD     NombrePrioridad,
+                                       e.NOMBRE               NombreEstado,
+                                       tm.NOMBRE              NombreTipoMeet
+                                  FROM mm_meet  m
+                                       INNER JOIN mm_sala s ON m.ID_SALA = s.ID_SALA
+                                       INNER JOIN mm_prioridad p ON m.ID_PRIORIDAD = p.ID_PRIORIDAD
+                                       INNER JOIN mm_estado_formulario e ON m.ID_ESTADO = e.ID_ESTADO
+                                       INNER JOIN mm_tipo_meet tm ON m.ID_TIPO_MEET = tm.ID_TIPO_MEET
+                                  WHERE m.hora_inicio >= :startDate 
+                                    AND m.hora_inicio <= :endDate
+                                  ORDER BY m.hora_inicio";
+
+                    var parameters = new
+                    {
+                        startDate,
+                        endDate
+                    };
+
+                    var reuniones = await connection.QueryAsync<MeetModelo>(sql, parameters);
+                    return reuniones;
+                }
+                catch (Exception)
+                {
+                    throw;
+                }
             }
         }
 
@@ -447,6 +291,134 @@ namespace Repositorios
             const string chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
             return new string(Enumerable.Repeat(chars, 10)
                 .Select(s => s[random.Next(s.Length)]).ToArray());
+        }
+
+
+
+        public async Task<int> RegistrarAsistencia(AsistenciaModelo asistencia)
+        {
+            var tokenQr = GenerarTokenQr();
+
+            var sql = @"INSERT INTO MM_PARTICIPANTE (ID_PARTICIPANTE,
+                                                 DPI,
+                                                 NOMBRE_COMPLETO,
+                                                 PUESTO,
+                                                 INSTITUCION,
+                                                 TELEFONO_EXTENSION,
+                                                 CORREO,
+                                                 SEXO,
+                                                 ID_MEET,
+                                                 ID_RANGO,
+                                                 ID_DISCAPACIDAD,
+                                                 ID_PUEBLO,
+                                                 ID_COM_LINGUISTICA,
+                                                 FECHA_REGISTRO)
+                         VALUES ( :idParticipante,
+                                 :dpi,
+                                 :nombreCompleto,
+                                 :puesto,
+                                 :institucion,
+                                 :telefonoExtension,
+                                 :correo,
+                                 :sexo,
+                                 (SELECT id_meet
+                                    FROM mm_meet
+                                   WHERE token_qr = :token),
+                                 :RangoEdad,
+                                 :Discapacidad,
+                                 :Pueblo,
+                                 :ComunidadLinguistica,
+                                  SYSDATE)";
+
+            using (var connection = await _connectionProvider.OpenAsync())
+            {
+                using (var trx = connection.BeginTransaction())
+                {
+                    try
+                    {
+                        var sqlGetNextId = "SELECT SEQ_MM_PARTICIPANTE.NEXTVAL FROM DUAL";
+                        var idParticipante = await connection.QuerySingleAsync<int>(sqlGetNextId);
+
+                        
+
+                        var parameters = new
+                        {
+                            idParticipante,
+                            asistencia.Dpi,
+                            asistencia.NombreCompleto,
+                            asistencia.Puesto,
+                            asistencia.Institucion,
+                            asistencia.TelefonoExtension,
+                            asistencia.Correo,
+                            asistencia.Sexo,
+                            asistencia.RangoEdad,
+                            asistencia.Discapacidad,
+                            asistencia.Pueblo,
+                            asistencia.ComunidadLinguistica,
+                            asistencia.Token
+
+
+                        };
+
+                        await connection.ExecuteAsync(sql, parameters);
+                        trx.Commit();
+                        return idParticipante;
+                    }
+                    catch (Exception)
+                    {
+                        trx.Rollback();
+                        throw;
+                    }
+                }
+            }
+        }
+
+
+
+        public async Task<IEnumerable<AsistenciaModelo>> ObtenerParticipantes(string token)
+        {
+            using (var connection = await _connectionProvider.OpenAsync())
+            {
+                try
+                {
+                    // TODO: Agregar aquí la query SQL para obtener reuniones por rango de fechas
+                    var sql = @"SELECT M.DPI,
+                                    M.NOMBRE_COMPLETO         nombreCompleto,
+                                    M.PUESTO,
+                                    M.INSTITUCION,
+                                    M.TELEFONO_EXTENSION      telefonoExtension,
+                                    M.CORREO,
+                                    M.SEXO,
+                                    mm.TOKEN_QR               token,
+                                    M.ID_RANGO                rangoEdad,
+                                    rangoEdad.DESCRIPCION     rangoEdadTexto,
+                                    M.ID_DISCAPACIDAD         discapacidad,
+                                    discap.NOMBRE             discapacidadTexto,
+                                    M.ID_PUEBLO               pueblo,
+                                    pueblo.NOMBRE             puebloTexto,
+                                    M.ID_COM_LINGUISTICA      comunidadLinguistica,
+                                    comunidad.NOMBRE          ComunidadLinguisticaTexto,
+                                    M.FECHA_REGISTRO          fechaRegistro             
+                                FROM MM_PARTICIPANTE  M
+                                    INNER JOIN mm_meet mm ON M.ID_MEET = mm.ID_MEET
+                                    INNER JOIN mm_rango_edad rangoEdad ON M.ID_RANGO = rangoEdad.ID_RANGO
+                                    INNER JOIN mm_discapacidad discap
+                                        ON M.ID_DISCAPACIDAD = discap.ID_DISCAPACIDAD
+                                    INNER JOIN mm_pueblo pueblo ON M.ID_PUEBLO = pueblo.ID_PUEBLO
+                                    INNER JOIN mm_comunidad_linguistica comunidad
+                                        ON M.ID_COM_LINGUISTICA = comunidad.ID_COM_LINGUISTICA
+                                WHERE mm.TOKEN_QR = :token";
+
+                    
+
+                    var participantes = await connection.QueryAsync<AsistenciaModelo>(sql, new { token });
+                    return participantes;
+                }
+                catch (Exception)
+                {
+                    throw;
+                }
+            }
         }
 
 

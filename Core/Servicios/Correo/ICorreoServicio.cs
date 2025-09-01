@@ -1,4 +1,5 @@
 ﻿
+using Core.Models;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -15,5 +16,7 @@ namespace Core.Correo.Servicios
         Task<bool> Autorizada(int noSolicitud, List<string> destinatarios);
 
         Task<string> EnviarCorreoEncuesta(int idEncuesta, string url);
+
+        Task<string> EnviarCorreoInvitacion(MeetCrearModelo meet);
     }
 }

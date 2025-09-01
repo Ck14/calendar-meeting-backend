@@ -66,98 +66,302 @@ namespace Repositorios
            "WHERE ACTIVO = 1 \n" +
            "ORDER BY NOMBRE ASC";
 
-        public async Task<ResultadoHttpModelo> ObtenerSalas()
+        public async Task<IEnumerable<SalaModelo>> ObtenerSalas()
         {
             using var connection = await _connectionProvider.OpenAsync();
             
             var sql = @"
                 SELECT 
-                    ID_SALA Id, 
-                    NOMBRE_SALA Nombre, 
-                    'Sala ' || NOMBRE_SALA || ' - Nivel ' || NIVEL Descripcion 
+                    ID_SALA IdSala, 
+                    NOMBRE_SALA NombreSala, 
+                    NIVEL                    
                 FROM MM_SALA 
                 WHERE HABILITADA = '1' 
                 ORDER BY NIVEL ASC, NOMBRE_SALA ASC";
             
-            var salas = await connection.QueryAsync<CatalogoModelo>(sql);
+            var salas = await connection.QueryAsync<SalaModelo>(sql);
             connection.Close();
-
-            return new ResultadoHttpModelo(EstadoSolicitudHttp.success)
-            {
-                Mensaje = "Salas obtenidas exitosamente",
-                Titulo = "Consulta de Salas",
-                Resultado = salas
-            };
+            
+            return salas;
         }
 
-        public async Task<ResultadoHttpModelo> ObtenerPrioridades()
+        public async Task<IEnumerable<PrioridadModelo>> ObtenerPrioridades()
         {
             using var connection = await _connectionProvider.OpenAsync();
             
             var sql = @"
                 SELECT 
-                    ID_PRIORIDAD Id, 
-                    NOMBRE_PRIORIDAD Nombre, 
-                    NOMBRE_PRIORIDAD Descripcion 
+                    ID_PRIORIDAD IdPrioridad, 
+                    NOMBRE_PRIORIDAD NombrePrioridad                    
                 FROM MM_PRIORIDAD 
                 ORDER BY ID_PRIORIDAD ASC";
             
-            var prioridades = await connection.QueryAsync<CatalogoModelo>(sql);
+            var prioridades = await connection.QueryAsync<PrioridadModelo>(sql);
             connection.Close();
-
-            return new ResultadoHttpModelo(EstadoSolicitudHttp.success)
-            {
-                Mensaje = "Prioridades obtenidas exitosamente",
-                Titulo = "Consulta de Prioridades",
-                Resultado = prioridades
-            };
+            
+            return prioridades;
         }
 
-        public async Task<ResultadoHttpModelo> ObtenerEstadosFormulario()
+        public async Task<IEnumerable<EstadoFormularioModelo>> ObtenerEstadosFormulario()
         {
             using var connection = await _connectionProvider.OpenAsync();
             
             var sql = @"
                 SELECT 
-                    ID_ESTADO Id, 
+                    ID_ESTADO IdEstado, 
                     NOMBRE Nombre, 
-                    NOMBRE Descripcion 
+                    FECHA_CREACION FechaCreacion
                 FROM MM_ESTADO_FORMULARIO 
                 ORDER BY ID_ESTADO ASC";
             
-            var estados = await connection.QueryAsync<CatalogoModelo>(sql);
+            var estados = await connection.QueryAsync<EstadoFormularioModelo>(sql);
             connection.Close();
-
-            return new ResultadoHttpModelo(EstadoSolicitudHttp.success)
-            {
-                Mensaje = "Estados obtenidos exitosamente",
-                Titulo = "Consulta de Estados",
-                Resultado = estados
-            };
+            
+            return estados;
         }
 
-        public async Task<ResultadoHttpModelo> ObtenerTiposMeet()
+        public async Task<IEnumerable<TipoMeetModelo>> ObtenerTiposMeet()
         {
             using var connection = await _connectionProvider.OpenAsync();
             
             var sql = @"
                 SELECT 
-                    ID_TIPO_MEET Id, 
+                    ID_TIPO_MEET IdTipoMeet, 
                     NOMBRE Nombre, 
-                    NOMBRE Descripcion 
+                    FECHA_CREACION FechaCreacion
                 FROM MM_TIPO_MEET 
                 ORDER BY ID_TIPO_MEET ASC";
             
-            var tiposMeet = await connection.QueryAsync<CatalogoModelo>(sql);
+            var tiposMeet = await connection.QueryAsync<TipoMeetModelo>(sql);
+            connection.Close();
+            
+            return tiposMeet;
+        }
+
+
+        public async Task<IEnumerable<RangoEdad>> ObtenerRangoEdad()
+        {
+            using var connection = await _connectionProvider.OpenAsync();
+
+            var sql = @"SELECT M.ID_RANGO idRango, M.DESCRIPCION
+                        FROM CLIMA_LABORAL.MM_RANGO_EDAD M
+                        order by id_rango asc";
+
+            var rangos = await connection.QueryAsync<RangoEdad>(sql);
             connection.Close();
 
-            return new ResultadoHttpModelo(EstadoSolicitudHttp.success)
-            {
-                Mensaje = "Tipos de reunión obtenidos exitosamente",
-                Titulo = "Consulta de Tipos de Reunión",
-                Resultado = tiposMeet
-            };
+            return rangos;
         }
+
+
+        public async Task<IEnumerable<ComunidadLinguistica>> ObtenerLengua()
+        {
+            using var connection = await _connectionProvider.OpenAsync();
+
+            var sql = @"SELECT M.ID_COM_LINGUISTICA idLenguaje, M.NOMBRE nombreLenguaje
+                        FROM CLIMA_LABORAL.MM_COMUNIDAD_LINGUISTICA M
+                        ORDER BY id_com_linguistica ASC";
+
+            var lenguaje = await connection.QueryAsync<ComunidadLinguistica>(sql);
+            connection.Close();
+
+            return lenguaje;
+        }
+
+        public async Task<IEnumerable<Pueblo>> ObtenerPueblo()
+        {
+            using var connection = await _connectionProvider.OpenAsync();
+
+            var sql = @"SELECT M.ID_PUEBLO idPueblo, M.NOMBRE nombrePueblo
+                        FROM CLIMA_LABORAL.MM_PUEBLO M
+                        ORDER BY nombre ASC";
+
+            var lenguaje = await connection.QueryAsync<Pueblo>(sql);
+            connection.Close();
+
+            return lenguaje;
+        }
+
+
+        public async Task<IEnumerable<Discapacidad>> ObtenerDiscapacidad()
+        {
+            using var connection = await _connectionProvider.OpenAsync();
+
+            var sql = @"Select M.ID_DISCAPACIDAD idDiscapacidad, M.NOMBRE nombreDiscapacidad
+                        From   CLIMA_LABORAL.MM_DISCAPACIDAD M
+                        order by id_discapacidad asc";
+
+            var discapacidad = await connection.QueryAsync<Discapacidad>(sql);
+            connection.Close();
+
+            return discapacidad;
+        }
+
+        //public async Task<TokenValidationResponse> ValidarTokenAsync(string token)
+        //{
+        //    using var connection = await _connectionProvider.OpenAsync();
+
+        //    var sql = @"SELECT CASE
+        //                        WHEN M.ID_MEET IS NOT NULL AND M.HORA_FIN >= SYSDATE THEN 1
+        //                        ELSE 0
+        //                    END              AS isValid,
+        //                    M.ID_MEET        AS idMeet,
+        //                    M.TITULO         AS titulo,
+        //                    M.HORA_INICIO    AS horaInicio,
+        //                    M.HORA_FIN       AS horaFin,
+        //                    CASE
+        //                        WHEN M.ID_MEET IS NULL THEN 'Token no válido'
+        //                        WHEN M.HORA_FIN < SYSDATE THEN 'La reunión ha expirado'
+        //                        ELSE 'Token válido'
+        //                    END              AS MESSAGE
+        //                FROM MM_MEET M
+        //                WHERE M.TOKEN_QR = :token";
+
+        //    var parameters = new { token };
+
+        //    var result = await connection.QueryFirstOrDefaultAsync<TokenValidationResponse>(sql, parameters);
+        //    connection.Close();
+
+        //    if (result == null)
+        //    {
+        //        return new TokenValidationResponse
+        //        {
+        //            IsValid = false,
+        //            Message = "Token no encontrado"
+        //        };
+        //    }
+
+        //    return result;
+        //}
+
+
+
+        public async Task<TokenValidationResponse> ValidarTokenAsync2(string token)
+        {
+            using var connection = await _connectionProvider.OpenAsync();
+
+            // Primero validamos el token
+            var validationSql = @"SELECT 
+                            CASE 
+                                WHEN M.ID_MEET IS NOT NULL AND M.HORA_FIN >= SYSDATE THEN 1 
+                                ELSE 0 
+                            END AS isValid,
+                            M.ID_MEET AS IdMeet,
+                            CASE 
+                                WHEN M.ID_MEET IS NULL THEN 'Token no válido'
+                                WHEN M.HORA_FIN < SYSDATE THEN 'La reunión ha expirado'
+                                ELSE 'Token válido'
+                            END AS Message
+                          FROM MM_MEET M
+                          WHERE M.TOKEN_QR = :token";
+
+            var validation = await connection.QueryFirstOrDefaultAsync(validationSql, new { token });
+
+            if (validation == null)
+            {
+                return new TokenValidationResponse
+                {
+                    IsValid = false,
+                    Message = "Token no encontrado"
+                };
+            }
+
+            var response = new TokenValidationResponse
+            {
+                IsValid = validation.ISVALID == 1,
+                Message = validation.MESSAGE
+            };
+
+            // Si es válido, obtenemos los detalles de la reunión
+            if (response.IsValid && validation.IdMeet != null)
+            {
+                var meetingSql = @"SELECT 
+                            ID_MEET AS IdMeet,
+                            TITULO AS Titulo,                            
+                            HORA_INICIO AS HoraInicio,
+                            HORA_FIN AS HoraFin
+                          FROM MM_MEET
+                          WHERE ID_MEET = :idMeet";
+
+                var meeting = await connection.QueryFirstOrDefaultAsync<MeetingInfo>(meetingSql, new { idMeet = validation.IdMeet });
+                response.Meeting = meeting;
+            }
+
+            connection.Close();
+            return response;
+        }
+
+
+
+        /*
+         * Códigos de validación:
+         * 0 = Token no válido (no existe)
+         * 1 = Válido (dentro del rango de hora)
+         * 2 = Muy temprano (antes de HORA_INICIO)
+         * 3 = Muy tarde (después de HORA_FIN)  
+         */
+        public async Task<TokenValidationResponse> ValidarTokenAsync(string token)
+        {
+            using var connection = await _connectionProvider.OpenAsync();
+
+            var validationSql = @"SELECT 
+                            CASE 
+                                WHEN M.ID_MEET IS NULL THEN 0
+                                WHEN SYSDATE < M.HORA_INICIO THEN 2
+                                WHEN SYSDATE > M.HORA_FIN THEN 3
+                                ELSE 1
+                            END AS validationCode,
+                            M.ID_MEET AS IdMeet,
+                            M.HORA_INICIO AS HoraInicio,
+                            M.HORA_FIN AS HoraFin,
+                            CASE 
+                                WHEN M.ID_MEET IS NULL THEN 'Token no válido'
+                                WHEN SYSDATE < M.HORA_INICIO THEN 'La reunión comenzará el ' || TO_CHAR(M.HORA_INICIO, 'DD/MM/YYYY') || ' a las ' || TO_CHAR(M.HORA_INICIO, 'HH24:MI')
+                                WHEN SYSDATE > M.HORA_FIN THEN 'La reunión finalizó el ' || TO_CHAR(M.HORA_FIN, 'DD/MM/YYYY') || ' a las ' || TO_CHAR(M.HORA_FIN, 'HH24:MI')
+                                ELSE 'Token válido'
+                            END AS Message
+                          FROM MM_MEET M
+                          WHERE M.TOKEN_QR = :token";
+
+            var validation = await connection.QueryFirstOrDefaultAsync(validationSql, new { token });
+
+            if (validation == null)
+            {
+                return new TokenValidationResponse
+                {
+                    IsValid = false,
+                    ValidationCode = 0,
+                    Message = "Token no encontrado"
+                };
+            }
+
+            var response = new TokenValidationResponse
+            {
+                IsValid = validation.VALIDATIONCODE == 1,
+                ValidationCode = Convert.ToInt32(validation.VALIDATIONCODE), 
+                Message = validation.MESSAGE
+            };
+
+            // Solo obtenemos los detalles si es válido
+            if (response.IsValid && validation.IDMEET != null)
+            {
+                var meetingSql = @"SELECT 
+                            ID_MEET AS IdMeet,
+                            TITULO AS Titulo,                            
+                            HORA_INICIO AS HoraInicio,
+                            HORA_FIN AS HoraFin
+                          FROM MM_MEET
+                          WHERE ID_MEET = :idMeet";
+
+                var meeting = await connection.QueryFirstOrDefaultAsync<MeetingInfo>(meetingSql, new { idMeet = validation.IDMEET });
+                response.Meeting = meeting;
+            }
+
+            connection.Close();
+            return response;
+        }
+
+
 
 
     }
