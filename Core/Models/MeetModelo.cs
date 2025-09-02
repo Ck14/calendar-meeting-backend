@@ -19,6 +19,7 @@ namespace Core.Models
         public int IdTipoMeet { get; set; }
         public string[]? invitados { get; set; }
         public string[]? organizadores { get; set; }
+        public string? TokenQr { get; set; }
     }
 
 

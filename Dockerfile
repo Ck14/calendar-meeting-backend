@@ -1,5 +1,5 @@
 # Usamos una imagen base de ASP.NET Core runtime 6.0
-FROM mcr.microsoft.com/dotnet/sdk:6.0 AS base
+FROM mcr.microsoft.com/dotnet/sdk:8.0 AS base
 
 # Establecemos el directorio de trabajo a /app
 WORKDIR /app
@@ -14,7 +14,7 @@ RUN apt-get update \
 EXPOSE 8080
 
 # Usamos una imagen de .NET SDK 6.0 para construir la aplicación
-FROM mcr.microsoft.com/dotnet/sdk:6.0 AS build
+FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 
 # Establecemos el directorio de trabajo a /src
 WORKDIR /src

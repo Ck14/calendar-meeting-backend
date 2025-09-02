@@ -71,10 +71,10 @@ namespace Core.Servicios
 
 
             var idMeet = await _meetRepositorio.CrearAsync(meet);
-            if (idMeet!=0){
-                await _correoServicio.EnviarCorreoInvitacion(meet);
+            //if (idMeet!=0){
+            //    await _correoServicio.EnviarCorreoInvitacion(meet);
 
-            }
+            //}
 
 
             return new ResultadoHttpModelo(EstadoSolicitudHttp.success)
@@ -201,7 +201,7 @@ namespace Core.Servicios
             }
             catch (Exception ex)
             {
-                throw new Exception($"Error al obtener participantes", ex);
+                throw;
             }
 
         }

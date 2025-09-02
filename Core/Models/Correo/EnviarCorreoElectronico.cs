@@ -42,6 +42,7 @@ namespace Core.Models.Correo
         public string MaterialPreparatorio { get; set; }
         public bool RequiereRespuesta { get; set; }
         public DateTime? FechaLimiteRespuesta { get; set; }
+        public string TokenQr{ get; set; }
 
         public EnviarCorreoEvento() : base()
         {

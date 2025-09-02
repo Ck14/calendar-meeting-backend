@@ -1,4 +1,5 @@
 using Core.Constantes;
+using Core.Correo.Servicios;
 using Core.Models;
 using Core.Repositorios;
 using Dapper;
@@ -12,10 +13,12 @@ namespace Repositorios
     public class MeetRepositorio : IMeetRepositorio
     {
         private readonly IConnectionProvider _connectionProvider;
+        private readonly ICorreoServicio _correoServicio;
 
-        public MeetRepositorio(IConnectionProvider connectionProvider)
+        public MeetRepositorio(IConnectionProvider connectionProvider, ICorreoServicio correoServicio)
         {
             _connectionProvider = connectionProvider;
+            _correoServicio = correoServicio;
         }
 
 
@@ -118,6 +121,8 @@ namespace Repositorios
                         };
 
                         await connection.ExecuteAsync(sql, parameters);
+                        meet.TokenQr  = tokenQr;
+                        await _correoServicio.EnviarCorreoInvitacion(meet);
                         trx.Commit();
                         return idMeet;
                     }

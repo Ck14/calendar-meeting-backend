@@ -160,7 +160,7 @@ namespace Repositorios
 
             var sql = @"SELECT M.ID_COM_LINGUISTICA idLenguaje, M.NOMBRE nombreLenguaje
                         FROM CLIMA_LABORAL.MM_COMUNIDAD_LINGUISTICA M
-                        ORDER BY id_com_linguistica ASC";
+                        ORDER BY m.nombre ASC";
 
             var lenguaje = await connection.QueryAsync<ComunidadLinguistica>(sql);
             connection.Close();
@@ -174,7 +174,7 @@ namespace Repositorios
 
             var sql = @"SELECT M.ID_PUEBLO idPueblo, M.NOMBRE nombrePueblo
                         FROM CLIMA_LABORAL.MM_PUEBLO M
-                        ORDER BY nombre ASC";
+                        ORDER BY m.id_pueblo ASC";
 
             var lenguaje = await connection.QueryAsync<Pueblo>(sql);
             connection.Close();

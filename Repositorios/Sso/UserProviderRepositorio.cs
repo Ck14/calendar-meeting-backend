@@ -7,6 +7,7 @@ using Minfin.SSO.Api.Models.Usuario;
 using Minfin.SSO.WebApi.Client;
 using Minfin.SSO.WebApi.Client.Clients;
 using Core.Excepciones;
+using Exceptionless;
 
 namespace Repositorios.Sso
 {
@@ -88,6 +89,16 @@ namespace Repositorios.Sso
                     Correo= usuario.Correo,
                     Activo = usuario.Activo
                 };
+                // Replace the following line:
+                // Exceptionless.Logging.ExtendedData.Add("Nit", usuarioSRBM.Nit);
+
+                // With this line, which uses Exceptionless's recommended way to add custom data to the log:
+                Exceptionless.ExceptionlessClient.Default.CreateLog("Usuario autenticado")
+                    .AddObject(usuarioSRBM)
+                    .AddTags("SSO", "Autenticacion")
+                    .SetProperty("Nit", usuarioSRBM.Nit)
+                    .Submit();
+
                 return usuarioSRBM;
             }
         }

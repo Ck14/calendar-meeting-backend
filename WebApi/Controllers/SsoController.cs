@@ -108,36 +108,46 @@ namespace WebApi.Controllers
         [HttpGet("usuario")]
         public async Task<IActionResult> Get()
         {
-            if (User.Identity is ClaimsIdentity identity)
+            try
             {
-                if (identity.Claims.Any())
+                if (User.Identity is ClaimsIdentity identity)
                 {
-                    var userClaims = identity.Claims;
-                    var claimsDictionary = (User.Identity as ClaimsIdentity)?.Claims.ToDictionary(x => x.Type, x => x.Value);
-                    string nit = userClaims.FirstOrDefault(claim => claim.Type == ClaimTypes.NameIdentifier)?.Value ?? "";
-                    var perfil = await _usuarioServicio.ObtenerPerfilUsuarioAsync(nit);
-                    return Json(new
+                    if (identity.Claims.Any())
                     {
-                        identity.IsAuthenticated,
-                        identity.Name,
-                        nit,
-                        Perfil = new
+                        var userClaims = identity.Claims;
+                        var claimsDictionary = (User.Identity as ClaimsIdentity)?.Claims.ToDictionary(x => x.Type, x => x.Value);
+                        string nit = userClaims.FirstOrDefault(claim => claim.Type == ClaimTypes.NameIdentifier)?.Value ?? "";
+                        var perfil = await _usuarioServicio.ObtenerPerfilUsuarioAsync(nit);
+                        return Json(new
                         {
-                            perfil.Menu,
-                            perfil.Roles
-                        },
-                        Claims = claimsDictionary
-                    });
+                            identity.IsAuthenticated,
+                            identity.Name,
+                            nit,
+                            Perfil = new
+                            {
+                                perfil.Menu,
+                                perfil.Roles
+                            },
+                            Claims = claimsDictionary
+                        });
+                    }
+                    else
+                    {
+                        return Json(new { User.Identity.IsAuthenticated });
+                    }
                 }
                 else
                 {
-                    return Json(new { User.Identity.IsAuthenticated });
+                    return Json(new { IsAuthenticated = false });
                 }
+
             }
-            else
+            catch (Exception ex)
             {
-                return Json(new { IsAuthenticated = false });
+                ex.ToExceptionless().Submit();
+                throw;
             }
+            
         }
 
 

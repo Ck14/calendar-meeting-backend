@@ -310,6 +310,7 @@ namespace Core.Correo.Servicios
             // Confirmación de asistencia
             correo.RequiereRespuesta = true;
             correo.FechaLimiteRespuesta = meet.FechaInicio.AddDays(-1); // un día antes por default
+            correo.TokenQr = meet.TokenQr ?? ""; // si no viene, generar uno nuevo
 
             // Modelo usado dentro de la plantilla
             correo.Modelo = new
